@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Walky Talky</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="css/main.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body>
+
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+  		Room ID : <input type="text" id="roomId">
+  		Password: <input type="password" id="password" >
+  			  <input type="submit" value="Create" id='create'>
+  			   <input type="submit" value="Enter" id='enter'>
+  </div>
+</nav>
+<br>
+
+<p id='response'></p>
+
+  <ul class="col-sm-6 offset-md-3 my-div" id='output' style="height:500px;width:50%;border:1px solid #ccc;;overflow:auto;">
+   
+  </ul>
+       <div style="height:500px;width:50% background:whitesmoke !important">
+       		<input class="col-sm-6 offset-md-3 mytext" id="message" placeholder="Type a message"/>
+            <input class="col-sm-6 offset-md-3 " type="submit" id='send' value="Send" />
+            
+       </div> 
+
+
+       <script src="js/main.js"></script>
+</body>
+</html>

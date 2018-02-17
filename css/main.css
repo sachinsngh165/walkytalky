@@ -1,0 +1,27 @@
+.mytext{
+    border:0;padding:10px;background:whitesmoke;
+}
+
+.my-div {
+    position: relative;
+    background-color: #DCDCDC;
+    padding: 4px;
+}
+.my-div:after {
+    position: absolute;
+    border: 1px #888 solid;
+}
+
+
+ul {
+    overflow:hidden; 
+    overflow-y:scroll;
+    width:100%;
+    list-style-type: none;
+    padding:18px;
+    position:absolute;
+    bottom:32px;
+    display:flex;
+    flex-direction: column;
+}
+ 
