@@ -34,7 +34,7 @@ function createRoom()
 {
     var roomId = document.getElementById('roomId').value
     var password = document.getElementById('password').value
-    connectToServer("ws://localhost:8080/ws",roomId,password,'create');
+    connectToServer("ws://0.0.0.0:8080/ws",roomId,password,'create');
 
         // Connection opened
     window.mySocket.addEventListener('open', function (event) {
@@ -91,7 +91,7 @@ function formatAMPM(date) {
 
 function insertChat(who, text){
     if(who=="me")
-        text = "You:   ";
+        text = "You:   "+text;
     console.log("called")
     var control = "";
     var date = formatAMPM(new Date());
