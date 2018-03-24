@@ -36,7 +36,7 @@ function createRoom()
     var password = document.getElementById('password').value
     username = document.getElementById('username').value
     if ('null'!=roomId && 'null'!=username && 'null'!=username){
-            connectToServer("ws://0.0.0.0:8080/ws",roomId,password,'create',username);
+            connectToServer("wss://sachinsingh.co.in:81",roomId,password,'create',username);
 
             // Connection opened
         window.mySocket.addEventListener('open', function (event) {
@@ -77,7 +77,7 @@ function enterRoom()
     username = document.getElementById('username').value
     if ('null'!=roomId && 'null'!=username && 'null'!=username)
      {
-            connectToServer("ws://localhost:8080/ws",roomId,password,'enter',username);
+            connectToServer("wss://sachinsingh.co.in:81",roomId,password,'enter',username);
 
         // Connection opened
         window.mySocket.addEventListener('open', function (event) {
