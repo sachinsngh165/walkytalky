@@ -3,10 +3,10 @@ import sys,json
 from twisted.web.static import File
 from twisted.python import log
 from twisted.web.server import Site
-from twisted.internet import reactor
+from twisted.internet import reactor,ssl
 
 from autobahn.twisted.websocket import WebSocketServerFactory, \
-    WebSocketServerProtocol
+    WebSocketServerProtocol,listenWS
 
 from autobahn.twisted.resource import WebSocketResource
 
@@ -149,15 +149,45 @@ class ChatRouletteFactory(WebSocketServerFactory):
 if __name__ == "__main__":
     log.startLogging(sys.stdout)
 
-    # static file server serving index.html as root
-    root = File(".")
 
-    factory = ChatRouletteFactory(u"ws://0.0.0.1:8080")
+
+    log.startLogging(sys.stdout)
+
+    # SSL server context: load server key and certificate
+    # We use this for both WS and Web!
+    contextFactory = ssl.DefaultOpenSSLContextFactory('/etc/letsencrypt/live/sachinsingh.co.in/privkey.pem',
+                                                      '/etc/letsencrypt/live/sachinsingh.co.in/fullchain.pem')
+
+    factory = ChatRouletteFactory(u"wss://sachinsingh.co.in:81")
+    # by default, allowedOrigins is "*" and will work fine out of the
+    # box, but we can do better and be more-explicit about what we
+    # allow. We are serving the Web content on 8080, but our WebSocket
+    # listener is on 9000 so the Origin sent by the browser will be
+    # from port 8080...
+
+
+    factory.setProtocolOptions(maxFramePayloadSize=1048576,
+                                     maxMessagePayloadSize=1048576,
+                                     autoFragmentSize=65536,
+                                     failByDrop=False,
+                                     openHandshakeTimeout=20.5,
+                                     closeHandshakeTimeout=10.,
+                                     tcpNoDelay=True,
+                                     autoPingInterval=10.,
+                                     autoPingTimeout=5.,
+                                     autoPingSize=4,
+                                     # perMessageCompressionOffers=offers,
+                                     # perMessageCompressionAccept=accept,
+                                     allowedOrigins=[
+                                         "https://sachinsngh165.github.io:443",
+                                         "https://sachinsngh165.github.io:80",
+                                         "https://sachinsingh.co.in:443",
+                                         "https://35.229.213.23:443",
+                                        "https://127.0.0.1:8080",
+                                        "https://localhost:8080",
+        ],)
+
+
     factory.protocol = SomeServerProtocol
-    resource = WebSocketResource(factory)
-    # websockets resource on "/ws" path
-    root.putChild(u"ws", resource)
-
-    site = Site(root)
-    reactor.listenTCP(8080, site)
+    listenWS(factory,contextFactory)
     reactor.run()
