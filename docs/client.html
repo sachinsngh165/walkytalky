@@ -11,24 +11,26 @@
 
 <nav class="navbar navbar-default">
   <div class="container-fluid">
+      Username : <input type="text" id="username">
   		Room ID : <input type="text" id="roomId">
   		Password: <input type="password" id="password" >
   			  <input type="submit" value="Create" id='create'>
-  			   <input type="submit" value="Enter" id='enter'>
+  			   <input type="submit" value="Join" id='enter'>
   </div>
 </nav>
 <br>
 
 <p id='response'></p>
-
   <ul class="col-sm-6 offset-md-3 my-div" id='output' style="height:500px;width:50%;border:1px solid #ccc;;overflow:auto;">
    
   </ul>
+
        <div style="height:500px;width:50% background:whitesmoke !important">
        		<input class="col-sm-6 offset-md-3 mytext" id="message" placeholder="Type a message"/>
             <input class="col-sm-6 offset-md-3 " type="submit" id='send' value="Send" />
             
        </div> 
+ <ul id='users'></ul>
 
 
        <script src="js/main.js"></script>

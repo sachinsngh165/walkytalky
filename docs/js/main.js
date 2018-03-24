@@ -1,6 +1,6 @@
 var createButton = document.getElementById('create')
 var enterButton = document.getElementById('enter')
-
+var username = null
 createButton.onclick = createRoom;
 enterButton.onclick = enterRoom;
 document.getElementById("send").onclick = sendMessage;
@@ -34,20 +34,39 @@ function createRoom()
 {
     var roomId = document.getElementById('roomId').value
     var password = document.getElementById('password').value
-    connectToServer("ws://0.0.0.0:8080/ws",roomId,password,'create');
+    username = document.getElementById('username').value
+    if ('null'!=roomId && 'null'!=username && 'null'!=username){
+            connectToServer("ws://0.0.0.0:8080/ws",roomId,password,'create',username);
 
-        // Connection opened
-    window.mySocket.addEventListener('open', function (event) {
-        document.getElementById('response').innerText = "Room successfully created! ";
-        window.mySocket.onmessage = function (event) {
-            insertChat("other: ",event.data)
-                        };
-    });
+            // Connection opened
+        window.mySocket.addEventListener('open', function (event) {
+            document.getElementById('response').innerText = "Room successfully created! ";
+            window.mySocket.onmessage = function (event) {
+                dict = JSON.parse(event.data);
+                user = dict.username
+                msg  = dict.msg
+                type = dict.type
+                if(type==0)
+                {
+                    text =  user + " : " + dict.msg;
+                    insertChat("other: ",text)
+                }else{
+                    entry = document.createElement('li');
+                    entry.appendChild(document.createTextNode(user + " " + msg));
+                    list = document.getElementById('users');
+                    list.appendChild(entry); 
+                }
+                            };
+        });
 
-    // Connetion closed
-    window.mySocket.addEventListener('close',function(event){
-        document.getElementById('response').innerText = "Room ID already exist";
-    });
+        // Connetion closed
+        window.mySocket.addEventListener('close',function(event){
+            document.getElementById('response').innerText = "Room ID already exist";
+        });
+    }else{
+         document.getElementById('response').innerText = "! Some fields are empty " 
+    }
+    
     
 }
 
@@ -55,26 +74,47 @@ function enterRoom()
 {
     var roomId = document.getElementById('roomId').value;
     var password = document.getElementById('password').value;
-    connectToServer("ws://localhost:8080/ws",roomId,password,'enter');
+    username = document.getElementById('username').value
+    if ('null'!=roomId && 'null'!=username && 'null'!=username)
+     {
+            connectToServer("ws://localhost:8080/ws",roomId,password,'enter',username);
 
-    // Connection opened
-    window.mySocket.addEventListener('open', function (event) {
-        document.getElementById('response').innerText = "Success ";
-        window.mySocket.onmessage = function (event) {
-            insertChat("other: ",event.data)
-                        };
-    });
+        // Connection opened
+        window.mySocket.addEventListener('open', function (event) {
+            document.getElementById('response').innerText = "Success ";
+            window.mySocket.onmessage = function (event) {
+                dict = JSON.parse(event.data);
+                user = dict.username
+                msg  = dict.msg
+                type = dict.type
+                if(type==0)
+                {
+                    text =  user + " : " + dict.msg;
+                    insertChat("other: ",text)
+                }else{
+                    entry = document.createElement('li');
+                    entry.appendChild(document.createTextNode(user + " " + msg));
+                    list = document.getElementById('users');
+                    list.appendChild(entry); 
+                }
+              
+            };
+        });
 
-    // Connetion closed
-    window.mySocket.addEventListener('close',function(event){
-        document.getElementById('response').innerText = "Room ID or Password is wrong/ Room ID not exist"
-    })
+        // Connetion closed
+        window.mySocket.addEventListener('close',function(event){
+            document.getElementById('response').innerText = "! Room ID or Password is wrong/ Room ID not exist"
+        })
+    }else{
+        document.getElementById('response').innerText = "! Some fields are empty "   
+    }
+    
 }
 
 
-function connectToServer(host,roomID,password,type,currentStatus)
+function connectToServer(host,roomID,password,type,username)
 {
-    window.mySocket = new WebSocket(host+'?'+"roomID="+roomID+'&'+"password="+password+'&'+'requestType='+type);
+    window.mySocket = new WebSocket(host+'?'+"roomID="+roomID+'&'+"password="+password+'&'+'requestType='+type+'&'+'username='+username);
 }
 
 

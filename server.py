@@ -1,4 +1,4 @@
-import sys
+import sys,json
 
 from twisted.web.static import File
 from twisted.python import log
@@ -13,7 +13,7 @@ from autobahn.twisted.resource import WebSocketResource
 from autobahn.websocket.types import ConnectionDeny
 rooms = {}
 User2Room = {}
-
+Peer2Username ={}
 class Room():
     def __init__(self,roomId,password):
         self.roomId = roomId
@@ -52,19 +52,23 @@ class SomeServerProtocol(WebSocketServerProtocol):
 
     def onConnect(self, request):
         print request.params
-        if 'roomID' not in request.params and 'password' not in request.params:
+        if 'roomID' not in request.params and 'password' not in request.params and 'username' not in request.params:
             raise ConnectionDeny(403, reason=unicode("roomID and password required"))
         roomID = request.params['roomID'][0]
         password = request.params['password'][0]
         requestType = request.params['requestType'][0]
+        username = request.params['username'][0]
+        if username in Peer2Username:
+            raise ConnectionDeny(403, reason=unicode("Username already exist"))
+
         if requestType=='create':
             print roomID + " room created "
             if roomID not in rooms:
                 rooms[roomID]= Room(roomID,password)
-                room = rooms[roomID]
+
                 User2Room[request.peer] = roomID
             else:
-                raise ConnectionDeny(403, reason=unicode("Requested already exist"))
+                raise ConnectionDeny(403, reason=unicode("Requested room already exist"))
         elif requestType=='enter':
             if roomID not in rooms:
                 raise ConnectionDeny(403, reason=unicode("No such room exist "))
@@ -76,10 +80,12 @@ class SomeServerProtocol(WebSocketServerProtocol):
 
         else :
             raise ConnectionDeny(403,reason=unicode("Bad request"))
+        Peer2Username[request.peer] = username
 
     def onOpen(self):
         self.factory.register(self)
         print "Connection is opened"
+
 
     def connectionLost(self, reason):
         print "Connect is closed"
@@ -98,13 +104,28 @@ class ChatRouletteFactory(WebSocketServerFactory):
         rid = User2Room[client.peer]
         room = rooms[rid]
         room.addUser(client)
+        message = {'username':Peer2Username[client.peer],'msg':'joined','type':1}
+        msg = (json.dumps(message))
+        partners = room.getAllClients()
+        for partner in partners:
+            if client.peer != partner:
+                partners[partner].sendMessage(msg)
 
     def unregister(self, client):
         try:
             rid = User2Room[client.peer]
-            rooms[rid].removeUser(client.peer)
+            room = rooms[rid]
+            message = {'username':Peer2Username[client.peer],'msg':'left','type':1}
+            msg = (json.dumps(message))
+            partners = room.getAllClients()
+            for partner in partners:
+                if client.peer != partner:
+                    partners[partner].sendMessage(msg)
+            
+            rooms[rid].removeUser(client)
             User2Room.pop(client.peer)
-            if rooms[rid].numberOfClients <=0:
+            Peer2Username.pop(client.peer)
+            if rooms[rid].numberOfClients()<=0:
                 rooms.pop(rid)
         except:
             pass
@@ -113,20 +134,22 @@ class ChatRouletteFactory(WebSocketServerFactory):
     def communicate(self, client, payload, isBinary):
         rid = User2Room[client.peer]
         room = rooms[rid]
+        message = {'username':Peer2Username[client.peer],'msg':payload,'type':0}
+        msg = json.dumps(message)
         partners = room.getAllClients()
         if not partners:
             client.sendMessage("Sorry you dont have partner yet, check back in a minute")
         else:
             for partner in partners:
                 if client.peer != partner:
-                    partners[partner].sendMessage(str(client.peer) + " : "+ payload)
+                    partners[partner].sendMessage(msg)
 
 
 
 if __name__ == "__main__":
     log.startLogging(sys.stdout)
 
-    # static file server seving index.html as root
+    # static file server serving index.html as root
     root = File(".")
 
     factory = ChatRouletteFactory(u"ws://0.0.0.1:8080")
